@@ -6,7 +6,8 @@
 #include <queue>
 using namespace std;
 
-int main(){
-
+int utama(){
+cout<<"###############/t"<<endl;
+cout<<" rehan baik"<<endl;
     return 0;
 }
