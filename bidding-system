@@ -6,8 +6,60 @@
 #include <queue>
 using namespace std;
 
-int utama(){
-cout<<"###############/t"<<endl;
-cout<<" rehan baik"<<endl;
-    return 0;
+void tampilkanHeader() {
+
+    cout << "================================" << endl;
+
+    cout << "=        SELAMAT DATANG        =" <<endl;
+
+    cout << "=       DI PROGRAM LELANG      =" << endl;
+
+    cout << "================================" << endl;
+
+    cout << endl;
+
 }
+
+void tampilkanFooter() {
+
+    cout << endl;
+
+    cout << "================================" << endl;
+
+    cout << "|       TERIMA KASIH!          |" << endl;
+
+    cout << "================================" << endl;
+
+}
+
+int main() {
+
+
+    tampilkanHeader();
+
+  
+
+    string namaBarang;
+
+    int hargaAwal;
+
+    cout << "Masukkan nama barang: ";
+
+    getline(cin, namaBarang);
+
+    cout << "Masukkan harga awal: ";
+
+    cin >> hargaAwal;
+
+    cout << std::endl;
+
+    cout << "Barang yang dilelang: " << namaBarang << endl;
+
+    cout << "Harga awal: " << hargaAwal << endl;
+
+    tampilkanFooter();
+
+return 0;
+
+}
+
