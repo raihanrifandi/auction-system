@@ -126,22 +126,34 @@ public:
             }
         }
 
-        if (bidderPtr != nullptr && bidderPtr->getBalance() >= bid_amount) {
-            if (bid_amount > highestBid()) {
-                bids.push(bid_amount);
-                highestBidderId = bidder_id;
-                cout << "Bid placed successfully by bidder " << bidder_id << " for $" << bid_amount << endl;
+        if (bidderPtr != nullptr) {
+            if (bidderPtr->getBalance() >= bid_amount) {
+                if (bid_amount > highestBid()) {
+                    bids.push(bid_amount);
+                    highestBidderId = bidder_id;
+                    cout << "Bid placed successfully by bidder " << bidder_id << " for $" << bid_amount << endl;
 
-                // Deduct the bid amount from the bidder's balance
-                bidderPtr->setBalance(bidderPtr->getBalance() - bid_amount);
+                    // Deduct the bid amount from the bidder's balance
+                    bidderPtr->setBalance(bidderPtr->getBalance() - bid_amount); // problem line 137
 
-                // Auto-bid feature
-                autoBid(bidder_id, bid_amount);
+                    // solusi : admin dapat mengakhiri lelang, jika lelang berakhir maka akan mengembalikan variabel 
+                    //          boolean bernilai true yang nantinya dapat digunakan pada kondisi dimana balance 
+                    //          akun bidder yang menang akan dikurangi, dan tidak akan dikurangi jika belum tercapai
+                    //          nilai true (alias booleannya masih bernilai false)
+
+                    // Auto-bid feature
+                    autoBid(bidder_id, bid_amount);
+                } else {
+                    cout << "Your bid must be higher than the current highest bid" << endl;
+                }
             } else {
-                cout << "Your bid must be higher than the current highest bid" << endl;
+                cout << "Insufficient balance. Your current balance is $" << bidderPtr->getBalance() << endl;
             }
+        } else {
+            cout << "Bidder not found" << endl;
         }
     }
+
 
     void autoBid(int current_bidder_id, float current_bid_amount) {
         for (Bidder& bidder : admin.bidders) {
