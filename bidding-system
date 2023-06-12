@@ -5,209 +5,193 @@
 #include <string>
 #include <fstream>
 #include <algorithm>
+#include <chrono>
 #include <memory>
 using namespace std;
+
+// Tugas Proyek Akhir Responsei
+// Mata Kuliah Pemograman Terstruktur
 
 // Function declarations
 void displayHeader(const string& filename);
 
 // Classes
 class Bidder {
-private:
-    int id;
-    string username;
-    string password;
-    float balance;
-    float autoBidLimit;
+    private:
+        int id;
+        string username;
+        string password;
+        float balance;
+        float autoBidLimit;
 
-public:
-    Bidder(int id, const string& username, const string& password, float balance, float limit)
-        : id(id), username(username), password(password), balance(balance), autoBidLimit(limit) {}
+    public:
+        Bidder(int id, const string& username, const string& password, float balance, float limit)
+            : id(id), username(username), password(password), balance(balance), autoBidLimit(limit) {}
 
-    int getId() const {
-        return id;
-    }
+        int getId() const {
+            return id;
+        }
 
-    bool login(const string& user, const string& pass) {
-        return username == user && password == pass;
-    }
+        bool login(const string& user, const string& pass) {
+            return username == user && password == pass;
+        }
 
-    void setBalance(float new_balance) {
-        balance = new_balance;
-    }
+        void setBalance(float new_balance) {
+            balance = new_balance;
+        }
 
-    float getBalance() const {
-        return balance;
-    }
+        float getBalance() const {
+            return balance;
+        }
 
-    float getAutoBidLimit() const {
-        return autoBidLimit;
-    }
+        float getAutoBidLimit() const {
+            return autoBidLimit;
+        }
 };
 
 class Admin {
-public:
-    struct Item {
-        int id;
-        string name;
-        float startingPrice;
+    public:
+        struct Item {
+            int id;
+            string name;
+            float startingPrice;
 
-        Item(int id, const string& name, float startingPrice)
-            : id(id), name(name), startingPrice(startingPrice) {}
-    };
+            Item(int id, const string& name, float startingPrice)
+                : id(id), name(name), startingPrice(startingPrice) {}
+        };
 
-    vector<Bidder> bidders;
+        vector<Bidder> bidders;
 
-private:
-    string username;
-    string password;
-    queue<Item> items;
+    private:
+        string username;
+        string password;
+        queue<Item> items;
 
-public:
-    Admin(const string& username, const string& password)
-        : username(username), password(password) {}
-    
-    queue<Admin::Item>& getItems() {
-    return items;
-    }
+    public:
+        Admin(const string& username, const string& password)
+            : username(username), password(password) {}
+        
+        queue<Admin::Item>& getItems() {
+        return items;
+        }
 
-    bool login(const string& user, const string& pass) {
-        return username == user && password == pass;
-    }
+        bool login(const string& user, const string& pass) {
+            return username == user && password == pass;
+        }
 
-    void addItem(int id, const string& name, float startingPrice) {
-        Item newItem(id, name, startingPrice);
-        items.push(newItem);
-    }
+        void addItem(int id, const string& name, float startingPrice) {
+            Item newItem(id, name, startingPrice);
+            items.push(newItem);
+        }
 
-    void createBidderAccount(int id, const string& user, const string& pass, float balance, float limit) {
-        Bidder newBidder(id, user, pass, balance, limit);
-        bidders.push_back(newBidder);
-    }
+        void createBidderAccount(int id, const string& user, const string& pass, float balance, float limit) {
+            Bidder newBidder(id, user, pass, balance, limit);
+            bidders.push_back(newBidder);
+        }
 
-    void setBidderBalance(int bidder_id, float new_balance) {
-        for (Bidder& bidder : bidders) {
-            if (bidder.getId() == bidder_id) {
-                bidder.setBalance(new_balance);
-                break;
+        void setBidderBalance(int bidder_id, float new_balance) {
+            for (Bidder& bidder : bidders) {
+                if (bidder.getId() == bidder_id) {
+                    bidder.setBalance(new_balance);
+                    break;
+                }
             }
         }
-    }
 
-    // queue implementation
-    Item getNextItem() {
-        Item nextItem = items.front();
-        items.pop();
-        return nextItem;
-    }
-
+        // Queue implementation
+        Item getNextItem() {
+            Item nextItem = items.front();
+            items.pop();
+            return nextItem;
+        }
    
 };
 
 class Auction {
-private:
-    Admin& admin;
-    stack<float> bids;
-    int highestBidderId;
+    private:
+        Admin& admin;
+        stack<float> bids;
+        int highestBidderId;
 
-public:
-    Auction(Admin& admin) : admin(admin), highestBidderId(-1) {}
+    public:
+        Auction(Admin& admin) : admin(admin), highestBidderId(-1){}
 
-    void showNextItem();
+        void showCurrentItem();
 
-    void placeBid(int bidder_id, float bid_amount) {
-        Bidder* bidderPtr = nullptr;
+        void placeBid(int bidder_id, float bid_amount) {
+            Bidder* bidderPtr = nullptr;
 
-        // Find the bidder using a pointer
-        for (Bidder& bidder : admin.bidders) {
-            if (bidder.getId() == bidder_id) {
-                bidderPtr = &bidder;
-                break;
+            // Find the bidder using a pointer
+            for (Bidder& bidder : admin.bidders) {
+                if (bidder.getId() == bidder_id) {
+                    bidderPtr = &bidder;
+                    break;
+                }
             }
-        }
 
-        if (bidderPtr != nullptr) {
-            if (bidderPtr->getBalance() >= bid_amount) {
-                if (bid_amount > highestBid()) {
-                    bids.push(bid_amount);
-                    highestBidderId = bidder_id;
-                    cout << "Bid placed successfully by bidder " << bidder_id << " for $" << bid_amount << endl;
+            if (bidderPtr != nullptr) {
+                if (bidderPtr->getBalance() >= bid_amount) {
+                    if (bid_amount > highestBid()) {
+                        bids.push(bid_amount);
+                        highestBidderId = bidder_id;
+                        cout << "Bid placed successfully by bidder " << bidder_id << " for $" << bid_amount << endl;
 
-                    // Deduct the bid amount from the bidder's balance
-                    bidderPtr->setBalance(bidderPtr->getBalance() - bid_amount); // problem line 137
+                        // Deduct the bid amount from the bidder's balance
+                        bidderPtr->setBalance(bidderPtr->getBalance() - bid_amount); // problem line 137
 
-                    // solusi : admin dapat mengakhiri lelang, jika lelang berakhir maka akan mengembalikan variabel 
-                    //          boolean bernilai true yang nantinya dapat digunakan pada kondisi dimana balance 
-                    //          akun bidder yang menang akan dikurangi, dan tidak akan dikurangi jika belum tercapai
-                    //          nilai true (alias booleannya masih bernilai false)
+                        // perintah : admin dapat mengakhiri lelang, jika lelang berakhir maka akan mengembalikan variabel 
+                        //          boolean bernilai true yang nantinya dapat digunakan pada kondisi dimana balance 
+                        //          akun bidder yang menang akan dikurangi, dan tidak akan dikurangi jika belum tercapai
+                        //          nilai true (alias booleannya masih bernilai false)
 
-                    // Auto-bid feature
-                    autoBid(bidder_id, bid_amount);
+                    } else {
+                        cout << "Your bid must be higher than the current highest bid" << endl;
+                    }
                 } else {
-                    cout << "Your bid must be higher than the current highest bid" << endl;
+                    cout << "Insufficient balance. Your current balance is $" << bidderPtr->getBalance() << endl;
                 }
             } else {
-                cout << "Insufficient balance. Your current balance is $" << bidderPtr->getBalance() << endl;
+                cout << "Bidder not found" << endl;
             }
-        } else {
-            cout << "Bidder not found" << endl;
-        }
     }
 
+        float highestBid() {
+            float highest = 0.0f;
+            stack<float> tempStack;
 
-    void autoBid(int current_bidder_id, float current_bid_amount) {
-        for (Bidder& bidder : admin.bidders) {
-            if (bidder.getId() != current_bidder_id && bidder.getAutoBidLimit() > current_bid_amount) {
-                float newBid = min(bidder.getAutoBidLimit(), current_bid_amount + 1);
-                if (bidder.getBalance() >= newBid && newBid > highestBid()) {
-                    bids.push(newBid);
-                    highestBidderId = bidder.getId();
-                    cout << "Auto-bid placed successfully by bidder " << bidder.getId() << " for $" << newBid << endl;
+            while (!bids.empty()) {
+                float currentBid = bids.top();
+                bids.pop();
+                tempStack.push(currentBid);
 
-                    // Deduct the bid amount from the bidder's balance
-                    bidder.setBalance(bidder.getBalance() - newBid);
+                if (currentBid > highest) {
+                    highest = currentBid;
                 }
             }
+
+            // Restore the original stack
+            while (!tempStack.empty()) {
+                bids.push(tempStack.top());
+                tempStack.pop();
+            }
+
+            return highest;
         }
-    }
 
-    float highestBid() {
-        float highest = 0.0f;
-        stack<float> tempStack;
-
-        while (!bids.empty()) {
-            float currentBid = bids.top();
-            bids.pop();
-            tempStack.push(currentBid);
-
-            if (currentBid > highest) {
-                highest = currentBid;
+        void showHighestBid() {
+            if (!bids.empty()) {
+                cout << "The highest bid is $" << highestBid() << " from bidder " << highestBidderId << endl;
+            } else {
+                cout << "No bids have been placed yet" << endl;
             }
         }
-
-        // Restore the original stack
-        while (!tempStack.empty()) {
-            bids.push(tempStack.top());
-            tempStack.pop();
-        }
-
-        return highest;
-    }
-
-    void showHighestBid() {
-        if (!bids.empty()) {
-            cout << "The highest bid is $" << highestBid() << " from bidder " << highestBidderId << endl;
-        } else {
-            cout << "No bids have been placed yet" << endl;
-        }
-    }
 };
 
-void Auction::showNextItem() {
+void Auction::showCurrentItem() {
     queue<Admin::Item>& items = admin.getItems();
     if (!items.empty()) {
         Admin::Item nextItem = items.front();
-        cout << "Next item: " << nextItem.name << " (ID: " << nextItem.id << ", starting price: $" << nextItem.startingPrice << ")" << endl;
+        cout << "Current item: " << nextItem.name << " (ID: " << nextItem.id << ", starting price: $" << nextItem.startingPrice << ")" << endl;
     } else {
         cout << "No more items available" << endl;
     }
@@ -231,25 +215,25 @@ void displayHeader(const string& filename) {
 int main() {
     Admin admin("admin", "admin123");
     Auction auction(admin);
-    int choice;
+    char choice;
 
     do {
         string filename = "header.txt";
         displayHeader(filename);
 
         cout << "============================== Auction House Menu ================================" << endl;
-        cout << "\t\t\t1. Bidder Login" << endl;
-        cout << "\t\t\t2. Admin Login" << endl;
-        cout << "\t\t\t0. Exit" << endl;
+        cout << "\t\t\t1. Bidder Login\n";
+        cout << "\t\t\t2. Admin Login\n";
+        cout << "\t\t\t0. Exit\n";
         cout << "\t\t\tEnter your choice: ";
         cin >> choice;
 
         switch (choice) {
-            case 1: {
+            case '1': {
                 // Bidder Login
                 system("cls");
                 string username, password;
-                cout << "Bidder Login" << endl;
+                cout << "Bidder Login\n";
                 cout << "Username: ";
                 cin >> username;
                 cout << "Password: ";
@@ -266,32 +250,32 @@ int main() {
                 }
 
                 if (currentBidder != nullptr) {
-                    int bidderChoice;
+                    char bidderChoice;
                     do {
                         system("cls");
-                        cout << "Bidder Menu" << endl;
-                        cout << "1. Show Next Item" << endl;
-                        cout << "2. Place Bid" << endl;
-                        cout << "3. Show Highest Bid" << endl;
-                        cout << "0. Logout" << endl;
+                        cout << "Bidder Menu\n";
+                        cout << "1. Show current Item\n";
+                        cout << "2. Place Bid\n";
+                        cout << "3. Show Highest Bid\n";
+                        cout << "0. Logout\n";
                         cout << "Enter your choice: ";
                         cin >> bidderChoice;
 
                         switch (bidderChoice) {
-                            case 1:
-                                auction.showNextItem();
+                            case '1':
+                                auction.showCurrentItem();
                                 break;
-                            case 2: {
+                            case '2': {
                                 float bidAmount;
                                 cout << "Enter bid amount: $";
                                 cin >> bidAmount;
                                 auction.placeBid(currentBidder->getId(), bidAmount);
                                 break;
                             }
-                            case 3:
+                            case '3':
                                 auction.showHighestBid();
                                 break;
-                            case 0:
+                            case '0':
                                 cout << "Logout successful" << endl;
                                 break;
                             default:
@@ -308,30 +292,31 @@ int main() {
                 }
                 break;
             }
-            case 2: {
+            case '2': {
                 // Admin Login
                 system("cls");
                 string username, password;
-                cout << "Admin Login" << endl;
+                cout << "Admin Login\n";
                 cout << "Username: ";
                 cin >> username;
                 cout << "Password: ";
                 cin >> password;
 
                 if (admin.login(username, password)) {
-                    int adminChoice;
+                    char adminChoice;
                     do {
                         system("cls");
-                        cout << "Admin Menu" << endl;
-                        cout << "1. Add Item" << endl;
-                        cout << "2. Create Bidder Account" << endl;
-                        cout << "3. Set Bidder Balance" << endl;
-                        cout << "0. Logout" << endl;
+                        cout << "Admin Menu\n";
+                        cout << "1. Add Item\n";
+                        cout << "2. Create Bidder Account\n";
+                        cout << "3. Set Bidder Balance\n";
+                        cout << "4. Start auction\n";
+                        cout << "0. Logout\n";
                         cout << "Enter your choice: ";
                         cin >> adminChoice;
 
                         switch (adminChoice) {
-                            case 1: {
+                            case '1': {
                                 int itemId;
                                 string itemName;
                                 float startingPrice;
@@ -346,7 +331,7 @@ int main() {
                                 cout << "Item added successfully" << endl;
                                 break;
                             }
-                            case 2: {
+                            case '2': {
                                 int bidderId;
                                 string bidderUsername, bidderPassword;
                                 float balance, autoBidLimit;
@@ -364,7 +349,7 @@ int main() {
                                 cout << "Bidder account created successfully" << endl;
                                 break;
                             }
-                            case 3: {
+                            case '3': {
                                 int bidderId;
                                 float newBalance;
                                 cout << "Enter bidder ID: ";
@@ -375,7 +360,10 @@ int main() {
                                 cout << "Bidder balance updated successfully" << endl;
                                 break;
                             }
-                            case 0:
+                            case '4':{
+                                
+                            }
+                            case '0':
                                 cout << "Logout successful" << endl;
                                 break;
                             default:
@@ -392,7 +380,7 @@ int main() {
                 }
                 break;
             }
-            case 0:
+            case '0':
                 cout << "Thank you for using the Auction House program. Goodbye!" << endl;
                 break;
             default:
