@@ -5,11 +5,10 @@
 #include <string>
 #include <fstream>
 #include <algorithm>
-#include <chrono>
 #include <memory>
 using namespace std;
 
-// Tugas Proyek Akhir Responsei
+// Tugas Proyek Akhir Responsi
 // Mata Kuliah Pemograman Terstruktur
 
 // Function declarations
@@ -112,13 +111,33 @@ class Auction {
         Admin& admin;
         stack<float> bids;
         int highestBidderId;
+        bool auctionActive;
 
     public:
-        Auction(Admin& admin) : admin(admin), highestBidderId(-1){}
+        Auction(Admin& admin) : admin(admin), highestBidderId(-1), auctionActive(false){}
+
+        void startAuction() {
+            auctionActive = true;
+            cout << "Auction started." << endl;
+        }
+
+        void stopAuction() {
+            auctionActive = false;
+            cout << "Auction ended." << endl;
+        }
+
+        bool isAuctionActive() const {
+            return auctionActive;
+        }
 
         void showCurrentItem();
 
         void placeBid(int bidder_id, float bid_amount) {
+            if (!auctionActive) {
+                cout << "Auction is not active. Please wait for the admin to start the auction." << endl;
+                return;
+            }
+                    
             Bidder* bidderPtr = nullptr;
 
             // Find the bidder using a pointer
@@ -137,13 +156,9 @@ class Auction {
                         cout << "Bid placed successfully by bidder " << bidder_id << " for $" << bid_amount << endl;
 
                         // Deduct the bid amount from the bidder's balance
-                        bidderPtr->setBalance(bidderPtr->getBalance() - bid_amount); // problem line 137
+                         // problem line 137
 
-                        // perintah : admin dapat mengakhiri lelang, jika lelang berakhir maka akan mengembalikan variabel 
-                        //          boolean bernilai true yang nantinya dapat digunakan pada kondisi dimana balance 
-                        //          akun bidder yang menang akan dikurangi, dan tidak akan dikurangi jika belum tercapai
-                        //          nilai true (alias booleannya masih bernilai false)
-
+                   
                     } else {
                         cout << "Your bid must be higher than the current highest bid" << endl;
                     }
@@ -185,6 +200,8 @@ class Auction {
                 cout << "No bids have been placed yet" << endl;
             }
         }
+
+        void endAuctionAndUpdateWinner();
 };
 
 void Auction::showCurrentItem() {
@@ -194,6 +211,32 @@ void Auction::showCurrentItem() {
         cout << "Current item: " << nextItem.name << " (ID: " << nextItem.id << ", starting price: $" << nextItem.startingPrice << ")" << endl;
     } else {
         cout << "No more items available" << endl;
+    }
+}
+
+void Auction::endAuctionAndUpdateWinner() {
+    if (isAuctionActive()) {
+        stopAuction();
+
+        if (highestBidderId != -1) {
+            Bidder* winner = nullptr;
+            for (Bidder& bidder : admin.bidders) {
+                if (bidder.getId() == highestBidderId) {
+                    winner = &bidder;
+                    break;
+                }
+            }
+
+            if (winner != nullptr) {
+                float winningBid = highestBid();
+                winner->setBalance(winner->getBalance() - winningBid);
+                cout << "Bidder " << highestBidderId << " won the auction with a bid of $" << winningBid << endl;
+            }
+        } else {
+            cout << "No bids were placed during the auction" << endl;
+        }
+    } else {
+        cout << "Auction is not active. Please start the auction first" << endl;
     }
 }
 
@@ -286,7 +329,7 @@ int main() {
                         cout << "Press Enter to continue...";
                         cin.ignore();
                         cin.get();
-                    } while (bidderChoice != 0);
+                    } while (bidderChoice != '0');
                 } else {
                     cout << "Invalid username or password" << endl;
                 }
@@ -311,6 +354,7 @@ int main() {
                         cout << "2. Create Bidder Account\n";
                         cout << "3. Set Bidder Balance\n";
                         cout << "4. Start auction\n";
+                        cout << "5. Stop auction\n";
                         cout << "0. Logout\n";
                         cout << "Enter your choice: ";
                         cin >> adminChoice;
@@ -361,7 +405,12 @@ int main() {
                                 break;
                             }
                             case '4':{
-                                
+                                auction.startAuction();
+                                break;
+                            }
+                            case '5':{
+                                auction.endAuctionAndUpdateWinner();
+                                break;
                             }
                             case '0':
                                 cout << "Logout successful" << endl;
@@ -374,7 +423,7 @@ int main() {
                         cout << "Press Enter to continue...";
                         cin.ignore();
                         cin.get();
-                    } while (adminChoice != 0);
+                    } while (adminChoice != '0');
                 } else {
                     cout << "Invalid username or password" << endl;
                 }
@@ -392,7 +441,7 @@ int main() {
         cin.ignore();
         cin.get();
         system("cls");
-    } while (choice != 0);
+    } while (choice != '0');
 
     return 0;
 }
