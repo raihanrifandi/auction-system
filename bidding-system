@@ -116,10 +116,7 @@ class Auction {
     public:
         Auction(Admin& admin) : admin(admin), highestBidderId(-1), auctionActive(false){}
 
-        void startAuction() {
-            auctionActive = true;
-            cout << "Auction started." << endl;
-        }
+        void startAuction();
 
         void stopAuction() {
             auctionActive = false;
@@ -131,6 +128,8 @@ class Auction {
         }
 
         void showCurrentItem();
+
+        void removeItem();
 
         void placeBid(int bidder_id, float bid_amount) {
             if (!auctionActive) {
@@ -153,12 +152,7 @@ class Auction {
                     if (bid_amount > highestBid()) {
                         bids.push(bid_amount);
                         highestBidderId = bidder_id;
-                        cout << "Bid placed successfully by bidder " << bidder_id << " for $" << bid_amount << endl;
-
-                        // Deduct the bid amount from the bidder's balance
-                         // problem line 137
-
-                   
+                        cout << "Bid placed successfully by bidder " << bidder_id << " for $" << bid_amount << endl;                   
                     } else {
                         cout << "Your bid must be higher than the current highest bid" << endl;
                     }
@@ -168,7 +162,7 @@ class Auction {
             } else {
                 cout << "Bidder not found" << endl;
             }
-    }
+        }
 
         float highestBid() {
             float highest = 0.0f;
@@ -201,6 +195,13 @@ class Auction {
             }
         }
 
+        void resetBids() {
+            while (!bids.empty()) {
+                bids.pop();
+            }
+            highestBidderId = -1;
+        }   
+
         void endAuctionAndUpdateWinner();
 };
 
@@ -212,6 +213,18 @@ void Auction::showCurrentItem() {
     } else {
         cout << "No more items available" << endl;
     }
+}
+
+void Auction::removeItem() {
+    if (!admin.getItems().empty()) {
+        admin.getItems().pop();
+    }
+}
+
+void Auction::startAuction() {
+    resetBids();
+    auctionActive = true;
+    cout << "Auction started." << endl;
 }
 
 void Auction::endAuctionAndUpdateWinner() {
@@ -231,10 +244,13 @@ void Auction::endAuctionAndUpdateWinner() {
                 float winningBid = highestBid();
                 winner->setBalance(winner->getBalance() - winningBid);
                 cout << "Bidder " << highestBidderId << " won the auction with a bid of $" << winningBid << endl;
+                removeItem();
+                highestBidderId = -1;
             }
         } else {
             cout << "No bids were placed during the auction" << endl;
         }
+        resetBids();
     } else {
         cout << "Auction is not active. Please start the auction first" << endl;
     }
