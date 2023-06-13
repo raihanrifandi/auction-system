@@ -131,38 +131,7 @@ class Auction {
 
         void removeItem();
 
-        void placeBid(int bidder_id, float bid_amount) {
-            if (!auctionActive) {
-                cout << "Auction is not active. Please wait for the admin to start the auction." << endl;
-                return;
-            }
-                    
-            Bidder* bidderPtr = nullptr;
-
-            // Find the bidder using a pointer
-            for (Bidder& bidder : admin.bidders) {
-                if (bidder.getId() == bidder_id) {
-                    bidderPtr = &bidder;
-                    break;
-                }
-            }
-
-            if (bidderPtr != nullptr) {
-                if (bidderPtr->getBalance() >= bid_amount) {
-                    if (bid_amount > highestBid()) {
-                        bids.push(bid_amount);
-                        highestBidderId = bidder_id;
-                        cout << "Bid placed successfully by bidder " << bidder_id << " for $" << bid_amount << endl;                   
-                    } else {
-                        cout << "Your bid must be higher than the current highest bid" << endl;
-                    }
-                } else {
-                    cout << "Insufficient balance. Your current balance is $" << bidderPtr->getBalance() << endl;
-                }
-            } else {
-                cout << "Bidder not found" << endl;
-            }
-        }
+        void placeBid(int bidder_id, float bid_amount);
 
         float highestBid() {
             float highest = 0.0f;
@@ -215,6 +184,46 @@ void Auction::showCurrentItem() {
     }
 }
 
+void Auction::placeBid(int bidder_id, float bid_amount) {
+    if (!auctionActive) {
+        cout << "Auction is not active. Please wait for the admin to start the auction." << endl;
+        return;
+    }
+                
+    Bidder* bidderPtr = nullptr;
+
+    // Find the bidder using a pointer
+    for (Bidder& bidder : admin.bidders) {
+        if (bidder.getId() == bidder_id) {
+            bidderPtr = &bidder;
+            break;
+        }
+    }
+
+    if (bidderPtr != nullptr) {
+        if (bidderPtr->getBalance() >= bid_amount) {
+            // Check if bid amount is higher than or equal to the starting price
+            Admin::Item currentItem = admin.getItems().front();
+            if (bid_amount >= currentItem.startingPrice) {
+                if (bid_amount > highestBid()) {
+                    bids.push(bid_amount);
+                    highestBidderId = bidder_id;
+                    cout << "Bid placed successfully by bidder " << bidder_id << " for $" << bid_amount << endl;
+                } else {
+                    cout << "Your bid must be higher than the current highest bid" << endl;
+                }
+            } else {
+                cout << "Your bid must be higher than or equal to the starting price of $" << currentItem.startingPrice << endl;
+            }
+        } else {
+            cout << "Insufficient balance. Your current balance is $" << bidderPtr->getBalance() << endl;
+        }
+    } else {
+        cout << "Bidder not found" << endl;
+    }
+}
+
+
 void Auction::removeItem() {
     if (!admin.getItems().empty()) {
         admin.getItems().pop();
@@ -222,9 +231,18 @@ void Auction::removeItem() {
 }
 
 void Auction::startAuction() {
+   if (isAuctionActive()) {
+        cout << "Auction is already running." << endl;
+        return;
+    }
+
     resetBids();
-    auctionActive = true;
-    cout << "Auction started." << endl;
+    if (!admin.getItems().empty()) {
+        auctionActive = true;
+        cout << "Auction started." << endl;
+    } else {
+        cout << "No items available for auction." << endl;
+    }
 }
 
 void Auction::endAuctionAndUpdateWinner() {
