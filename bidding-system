@@ -68,19 +68,52 @@ class Admin {
 
     public:
         Admin(const string& username, const string& password)
-            : username(username), password(password) {}
-        
+        : username(username), password(password) {}
+
         queue<Admin::Item>& getItems() {
-        return items;
+            return items;
         }
 
         bool login(const string& user, const string& pass) {
             return username == user && password == pass;
         }
 
+        void quicksort(vector<Item>& items, int low, int high) {
+            if (low < high) {
+                int pivotIndex = partition(items, low, high);
+                quicksort(items, low, pivotIndex - 1);
+                quicksort(items, pivotIndex + 1, high);
+            }
+        }
+
+        int partition(vector<Item>& items, int low, int high) {
+            float pivot = items[high].startingPrice;
+            int i = low - 1;
+
+            for (int j = low; j <= high - 1; j++) {
+                if (items[j].startingPrice < pivot) {  // Menggunakan operator < untuk membandingkan harga barang
+                    i++;
+                    swap(items[i], items[j]);
+                }
+            }
+            swap(items[i + 1], items[high]);
+            return i + 1;
+        }
+
+
+        vector<Item> tempItems;
+
         void addItem(int id, const string& name, float startingPrice) {
             Item newItem(id, name, startingPrice);
-            items.push(newItem);
+            tempItems.push_back(newItem);
+        }
+
+        void sortAndAddItemsToQueue() {
+            quicksort(tempItems, 0, tempItems.size() - 1);
+            for (const auto& item : tempItems) {
+                items.push(item);
+            }
+            tempItems.clear();
         }
 
         void createBidderAccount(int id, const string& user, const string& pass, float balance, float limit) {
@@ -103,7 +136,22 @@ class Admin {
             items.pop();
             return nextItem;
         }
-   
+
+        void displayItem(const Item& item) {
+            cout << "Item ID: " << item.id << endl;
+            cout << "Name: " << item.name << endl;
+            cout << "Starting Price: $" << item.startingPrice << endl;
+        }
+
+        void displayItems() {
+            queue<Admin::Item>& temp = items;  // Menggunakan referensi ke antrian asli
+
+            while (!temp.empty()) {
+                displayItem(temp.front());
+                temp.pop();
+                cout << endl;
+            }
+        }
 };
 
 class Auction {
@@ -202,7 +250,6 @@ void Auction::placeBid(int bidder_id, float bid_amount) {
 
     if (bidderPtr != nullptr) {
         if (bidderPtr->getBalance() >= bid_amount) {
-            // Check if bid amount is higher than or equal to the starting price
             Admin::Item currentItem = admin.getItems().front();
             if (bid_amount >= currentItem.startingPrice) {
                 if (bid_amount > highestBid()) {
@@ -341,6 +388,7 @@ int main() {
                         switch (bidderChoice) {
                             case '1':
                                 auction.showCurrentItem();
+                                // admin.displayItems();
                                 break;
                             case '2': {
                                 float bidAmount;
@@ -406,6 +454,7 @@ int main() {
                                 cout << "Enter starting price: $";
                                 cin >> startingPrice;
                                 admin.addItem(itemId, itemName, startingPrice);
+                                admin.sortAndAddItemsToQueue();
                                 cout << "Item added successfully" << endl;
                                 break;
                             }
