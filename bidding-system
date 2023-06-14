@@ -78,6 +78,8 @@ class Admin {
             return username == user && password == pass;
         }
 
+        vector<Item> tempItems;
+
         void quicksort(vector<Item>& items, int low, int high) {
             if (low < high) {
                 int pivotIndex = partition(items, low, high);
@@ -100,16 +102,15 @@ class Admin {
             return i + 1;
         }
 
-
-        vector<Item> tempItems;
-
         void addItem(int id, const string& name, float startingPrice) {
             Item newItem(id, name, startingPrice);
             tempItems.push_back(newItem);
         }
 
         void sortAndAddItemsToQueue() {
-            quicksort(tempItems, 0, tempItems.size() - 1);
+            if (!tempItems.empty()) {
+                quicksort(tempItems, 0, tempItems.size() - 1);
+            }
             for (const auto& item : tempItems) {
                 items.push(item);
             }
@@ -144,7 +145,7 @@ class Admin {
         }
 
         void displayItems() {
-            queue<Admin::Item>& temp = items;  // Menggunakan referensi ke antrian asli
+            queue<Admin::Item> temp = items;  // Menggunakan referensi ke antrian asli
 
             while (!temp.empty()) {
                 displayItem(temp.front());
@@ -314,6 +315,7 @@ void Auction::endAuctionAndUpdateWinner() {
             }
         } else {
             cout << "No bids were placed during the auction" << endl;
+            removeItem();
         }
         resetBids();
     } else {
@@ -437,6 +439,7 @@ int main() {
                         cout << "3. Set Bidder Balance\n";
                         cout << "4. Start auction\n";
                         cout << "5. Stop auction\n";
+                        cout << "6. Show item list\n";
                         cout << "0. Logout\n";
                         cout << "Enter your choice: ";
                         cin >> adminChoice;
@@ -493,6 +496,10 @@ int main() {
                             }
                             case '5':{
                                 auction.endAuctionAndUpdateWinner();
+                                break;
+                            }
+                            case '6':{
+                                admin.displayItems();
                                 break;
                             }
                             case '0':
